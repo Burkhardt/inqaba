@@ -1,0 +1,54 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class InqPath {
+  - _native: pathlib.Path
+  + from_directory(value): InqPath
+  + from_path(value): InqPath
+  + as_path(): pathlib.Path
+  + segments: tuple
+  + depth: int
+  + __truediv__(relative_or_name)
+}
+
+class InqRelPath {
+  + value: str
+  + segments: tuple
+  + depth: int
+  + __truediv__(relative): InqRelPath
+}
+
+class InqFile {
+  + parent: InqPath
+  + name: str
+  + as_path(): pathlib.Path
+  + exists(): bool
+  + delete()
+}
+
+class InqTextFile {
+  + read_text()
+  + write_text(content)
+}
+
+class InqJsonFile {
+  + read_json()
+  + write_json(value)
+}
+
+class InqConfig {
+  + load(config_path): InqConfig
+  + find_config_file(): pathlib.Path
+  + get_cloud_root(name): InqPath
+  + is_cloud_path(path): bool
+  + temp_dir: InqPath
+  + local_backup_dir: InqPath
+  + clouds: dict
+}
+
+InqPath ..> InqRelPath : anchors
+InqFile *-- InqPath : parent
+InqTextFile --|> InqFile
+InqJsonFile --|> InqTextFile
+InqConfig --> InqPath
+@enduml
