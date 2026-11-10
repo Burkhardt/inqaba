@@ -1,54 +1,92 @@
 @startuml
 skinparam classAttributeIconSize 0
-
-class InqPath {
-  - _native: pathlib.Path
-  + from_directory(value): InqPath
-  + from_path(value): InqPath
-  + as_path(): pathlib.Path
-  + segments: tuple
-  + depth: int
-  + __truediv__(relative_or_name)
+hide empty members
+left to right direction
+package "inqaba.config" {
+class InqConfig {
+  _instance
+  + __init__(config_dict, config_path)
+  + is_config_loaded()
+  + reset()
+  + find_config_file()
+  + load(config_path)
+  + get_cloud_root(cloud_name)
+  + is_cloud_path(path)
 }
-
-class InqRelPath {
-  + value: str
-  + segments: tuple
-  + depth: int
-  + __truediv__(relative): InqRelPath
 }
-
+package "inqaba.entry" {
+class InqEntry {
+  + __init__(value)
+  + as_path()
+  + as_posix()
+  + cwd()
+  + parent()
+  + parents()
+  + name()
+  + stem()
+  + suffix()
+  + parts()
+  + expanduser()
+  + absolute()
+  + resolve(strict)
+  + is_absolute()
+  + relative_to(other)
+  + with_suffix(suffix)
+  + exists()
+  + is_file()
+  + is_dir()
+  + stat()
+  + mkdir(mode, parents, exist_ok)
+  + unlink(missing_ok)
+  + rename(target)
+  + replace(target)
+  + open()
+  + read_text(encoding)
+  + write_text(content, encoding)
+  + read_bytes()
+  + write_bytes(content)
+  + iterdir()
+  + glob(pattern)
+  + copy_to(target)
+  + write_durable(content)
+}
+}
+package "inqaba.files" {
 class InqFile {
-  + parent: InqPath
-  + name: str
-  + as_path(): pathlib.Path
-  + exists(): bool
+  + __init__(parent, name)
+  + full_name()
   + delete()
 }
-
 class InqTextFile {
-  + read_text()
-  + write_text(content)
 }
-
 class InqJsonFile {
-  + read_json()
-  + write_json(value)
+  + read_json(encoding)
+  + write_json(value, encoding)
 }
-
-class InqConfig {
-  + load(config_path): InqConfig
-  + find_config_file(): pathlib.Path
-  + get_cloud_root(name): InqPath
-  + is_cloud_path(path): bool
-  + temp_dir: InqPath
-  + local_backup_dir: InqPath
-  + clouds: dict
 }
-
-InqPath ..> InqRelPath : anchors
-InqFile *-- InqPath : parent
+package "inqaba.path" {
+class InqPathError {
+}
+class InqRelPath {
+  value
+  + segments()
+  + depth()
+}
+class InqPath {
+  + __init__(value)
+  + from_directory(value)
+  + from_path(value)
+  + as_path()
+  + segments()
+  + depth()
+}
+}
+InqFile --|> InqEntry
 InqTextFile --|> InqFile
 InqJsonFile --|> InqTextFile
-InqConfig --> InqPath
+InqPath --|> InqEntry
+InqFile --> InqPath : parent
+InqPath ..> InqRelPath : anchors
+InqConfig --> InqPath : configured roots
+InqEntry *-- "pathlib.Path" : embedded
 @enduml

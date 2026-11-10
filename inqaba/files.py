@@ -1,45 +1,31 @@
-"""Controlled file boundaries built on InqPath."""
-from __future__ import annotations
-
+"""File objects keep filesystem access inside Inqaba."""
 import json
-from dataclasses import dataclass
 from pathlib import Path
+from .entry import InqEntry
+from .path import InqPathError
 
-from .path import InqPath
 
-
-@dataclass(frozen=True, slots=True)
-class InqFile:
-	parent: InqPath
-	name: str
-
-	def as_path(self) -> Path:
-		return self.parent.as_path() / self.name
+class InqFile(InqEntry):
+	def __init__(self, parent, name=None):
+		if name is None:
+			super().__init__(parent)
+		else:
+			if not name or name in (".", "..") or "/" in name or "\\" in name or Path(name).is_absolute():
+				raise InqPathError("a file name must be a single terminal name")
+			super().__init__(Path(parent) / name)
 
 	@property
-	def full_name(self) -> str:
-		return str(self.as_path())
-
-	def exists(self) -> bool:
-		return self.as_path().is_file()
-
-	def delete(self) -> None:
-		self.as_path().unlink(missing_ok=True)
+	def full_name(self): return str(self)
+	def delete(self): self.unlink(missing_ok=True)
 
 
-@dataclass(frozen=True, slots=True)
 class InqTextFile(InqFile):
-	def read_text(self, encoding: str = "utf-8") -> str:
-		return self.as_path().read_text(encoding=encoding)
-
-	def write_text(self, content: str, encoding: str = "utf-8") -> None:
-		self.as_path().write_text(content, encoding=encoding)
+	"""UTF-8 text file; durable writes preserve the existing inode."""
 
 
-@dataclass(frozen=True, slots=True)
 class InqJsonFile(InqTextFile):
-	def read_json(self, encoding: str = "utf-8") -> object:
-		return json.loads(self.read_text(encoding))
+	def read_json(self, encoding="utf-8"):
+		return json.loads(self.read_text(encoding=encoding))
 
-	def write_json(self, value: object, encoding: str = "utf-8") -> None:
-		self.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding)
+	def write_json(self, value, encoding="utf-8"):
+		self.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding=encoding)

@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from .entry import InqEntry
 
 
 class InqPathError(ValueError):
@@ -28,14 +29,15 @@ class InqRelPath(os.PathLike[str]):
 		if raw in ("", "."):
 			object.__setattr__(self, "value", "")
 			return
-		if os.path.isabs(raw) or (len(raw) > 1 and raw[1] == ":"):
+		if os.path.isabs(raw) or raw == "~" or raw.startswith("~/") or (len(raw) > 1 and raw[1] == ":"):
 			raise InqPathError("InqRelPath requires a relative path")
-		if raw.endswith(os.sep):
+		explicit_directory = raw.endswith(os.sep)
+		if explicit_directory:
 			raw = raw.rstrip(os.sep)
 		# A terminal filename is not a relative directory path. Match the
 		# OsLib split convention: constructing a relative path from a bare
 		# filename yields the empty path (displayed as '.').
-		if os.sep not in raw and Path(raw).suffix:
+		if not explicit_directory and os.sep not in raw and Path(raw).suffix:
 			object.__setattr__(self, "value", "")
 			return
 		parts = [part for part in raw.split(os.sep) if part not in ("", ".")]
@@ -67,17 +69,14 @@ class InqRelPath(os.PathLike[str]):
 		return InqRelPath(os.path.join(self.value, part))
 
 
-@dataclass(frozen=True, slots=True)
-class InqPath(os.PathLike[str]):
+class InqPath(InqEntry):
 	"""Absolute directory path with safe relative composition."""
 
-	_native: Path
-
-	def __post_init__(self) -> None:
-		path = self._native.expanduser()
+	def __init__(self, value=".") -> None:
+		path = Path(value).expanduser()
 		if not path.is_absolute():
 			path = Path.cwd() / path
-		object.__setattr__(self, "_native", Path(os.path.abspath(path)))
+		self._native = Path(os.path.abspath(path))
 
 	@classmethod
 	def from_directory(cls, value: str | os.PathLike[str] | Path) -> "InqPath":
@@ -104,10 +103,11 @@ class InqPath(os.PathLike[str]):
 	def depth(self) -> int:
 		return len(self.segments)
 
-	def __truediv__(self, other: str | InqRelPath) -> "InqPath | Path":
+	def __truediv__(self, other: str | InqRelPath):
 		if isinstance(other, InqRelPath):
 			return InqPath(self._native / other.value)
 		name = _text(other)
 		if not name or os.path.basename(name) != name:
 			raise InqPathError("path composition accepts one relative segment or filename")
-		return self._native / name
+		from .files import InqFile
+		return InqFile(self, name)
