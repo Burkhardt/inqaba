@@ -12,6 +12,10 @@ license = { text = "Apache-2.0" }
 authors = [{ name = "Dr. Rainer Burkhardt" }]
 dependencies = []
 
+[project.urls]
+Repository = "https://github.com/Burkhardt/inqaba"
+ReleaseNotes = "https://github.com/Burkhardt/RAIkeep/blob/main/doc/releases/v4.x/inqaba_RELEASE_NOTES_4.x.md"
+
 [tool.hatch.build.targets.wheel]
 packages = ["inqaba"]
 
