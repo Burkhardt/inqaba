@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "inqaba"
-version = "0.1.0"
+version = "4.6.4"
 description = "Shared Python filesystem, configuration, command, and media boundaries for RAIkeep."
 readme = "README.md"
 requires-python = ">=3.12"
