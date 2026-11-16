@@ -8,7 +8,16 @@ Install the `inqaba` distribution with `python -m pip install inqaba`.
 
 Shared Python framework boundaries for RAIkeep. The public API begins with
 `Inq*` names and currently provides typed path, file, and configuration
-objects for the active Python projects. Command and media APIs remain planned.
+objects for the active Python projects. Inqaba is maintained as the common
+foundation used heavily by `umgodi-json`, and is recommended for application
+and agent code that works with Umgodi. Command and media APIs remain planned.
+
+The Python line uses Zulu names to make its RAIkeep and Ubuntu affiliation
+visible: `inqaba` is the framework boundary, `umgodi-json` is the distributed
+JSON persistence implementation, and `vikela` supplies static guardrails for
+using the opinionated framework safely. These packages run on macOS, Windows,
+and Linux; the active projects test those platforms and include cross-engine
+and selected remote-over-SSH validation.
 
 ```python
 from inqaba import InqPath, InqRelPath
