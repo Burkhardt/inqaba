@@ -4,7 +4,7 @@
 
 # inqaba
 
-[Code signing policy](https://github.com/Burkhardt/RAIkeep/blob/main/README_codesigning.md)
+[Code signing policy](https://github.com/Burkhardt/RAIkeep/blob/main/README_codesigning.md) · SignPath Foundation application in preparation; signing is not yet active.
 
 Install the `inqaba` distribution with `python -m pip install inqaba`.
 
