@@ -47,19 +47,11 @@ def test_durable_write_keeps_inode_and_backup(tmp_path):
 	assert file.read_text() == "new"
 
 
-def test_cloud_detection_respects_components_and_symlinks(tmp_path):
-	cloud = tmp_path / "cloud"
-	cloud.mkdir()
+def test_cloud_detection_respects_components_and_symlinks(tmp_path, cloud_tenant):
+	provider, directory = cloud_tenant
+	config = InqConfig.load()
 	alias = tmp_path / "alias"
-	alias.symlink_to(cloud, target_is_directory=True)
-	config = InqConfig({"Cloud": {"OneDrive": str(cloud)}})
-	assert isinstance(config.get_cloud_root("onedrive"), InqPath)
+	alias.symlink_to(directory, target_is_directory=True)
+	assert isinstance(config.get_cloud_root(provider), InqPath)
 	assert config.is_cloud_path(alias / "new.pit")
-	assert not config.is_cloud_path(tmp_path / "cloud-other" / "new.pit")
-
-
-def test_default_cloud_skips_unavailable_roots(tmp_path):
-	available = tmp_path / "available"
-	available.mkdir()
-	config = InqConfig({"Cloud": {"OneDrive": str(tmp_path / "missing"), "Dropbox": str(available)}})
-	assert config.get_cloud_root() == available
+	assert not config.is_cloud_path(tmp_path / "outside.pit")

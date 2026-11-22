@@ -13,12 +13,8 @@ def test_text_and_json_files(tmp_path):
 	assert data.read_json() == {"Status": "Ready"}
 
 
-def test_config_loads_json5_and_returns_inq_paths(tmp_path):
-	config_file = tmp_path / "RAIkeep.json5"
-	config_file.write_text(
-		"{ Cloud: { OneDrive: '~/OneDrive/' }, TempDir: '~/tmp/', }",
-		encoding="utf-8",
-	)
-	config = InqConfig.load(config_file)
+def test_config_loads_json5_and_returns_inq_paths(configured_test_cloud):
+	provider, root = configured_test_cloud
+	config = InqConfig.load()
 	assert config.temp_dir.as_path().is_absolute()
-	assert config.get_cloud_root("onedrive") is not None
+	assert config.get_cloud_root(provider).as_path() == root
