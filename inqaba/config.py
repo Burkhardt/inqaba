@@ -56,6 +56,21 @@ class InqConfig:
 				if path_str:
 					self.clouds[name] = self._normalize_path(str(path_str))
 
+		self.live_cloud: str | None = raw.get("LiveCloud")
+		self.test_cloud: str | None = raw.get("TestCloud")
+		for key in ("LiveCloud", "TestCloud"):
+			if key in raw and (not isinstance(raw[key], str) or raw[key] not in self.clouds):
+				raise ValueError(f"{key} must name a configured Cloud entry; got {raw[key]!r}. Configured Cloud entries: {', '.join(self.clouds)}")
+		if self.live_cloud is None:
+			self.live_cloud = self.default_cloud_order[0] if self.default_cloud_order else None
+
+	def cloud_root(self, provider: str) -> InqPath:
+		"""Resolve a named provider strictly; missing keys are configuration errors."""
+		root = self.get_cloud_root(provider)
+		if root is None:
+			raise ValueError(f"Cloud.{provider} is not configured. Configured Cloud entries: {', '.join(self.clouds)}")
+		return InqPath.from_directory(root)
+
 	@property
 	def is_config_loaded(self) -> bool:
 		"""Returns True if configuration was loaded from a file or explicit dictionary."""
@@ -118,10 +133,12 @@ class InqConfig:
 		if resolved_file and resolved_file.is_file():
 			try:
 				data = loads_json5(resolved_file.read_text(encoding="utf-8"))
-				cls._instance = cls(data, config_path=resolved_file)
-				return cls._instance
 			except Exception:
 				pass
+			else:
+				# Invalid configured roles must not silently become default configuration.
+				cls._instance = cls(data, config_path=resolved_file)
+				return cls._instance
 
 		# Fallback default configuration
 		cls._instance = cls({}, config_path=None)
