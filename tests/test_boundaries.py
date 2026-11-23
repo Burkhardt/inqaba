@@ -26,18 +26,18 @@ def test_directory_enumeration_keeps_types_and_pathlike_interop(tmp_path):
 	root = InqPath(tmp_path)
 	directory = root / InqRelPath("child/")
 	directory.mkdir()
-	file = root / "state.pit"
+	file = root / "state.txt"
 	assert isinstance(file, InqFile)
 	file.write_text("before")
 	assert Path(file).read_text() == "before"
 	assert {type(p) for p in root.iterdir()} == {InqPath, InqFile}
-	assert list(root.glob("*.pit")) == [file]
+	assert list(root.glob("*.txt")) == [file]
 	assert file.parent == root
 	assert str(InqRelPath("directory.with.dots/")) == "directory.with.dots"
 
 
 def test_durable_write_keeps_inode_and_backup(tmp_path):
-	file = InqTextFile(tmp_path / "data.pit")
+	file = InqTextFile(tmp_path / "data.txt")
 	file.write_durable("old")
 	inode = file.stat().st_ino
 	backup = file.copy_to(tmp_path / "backup")
