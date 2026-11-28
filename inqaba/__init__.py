@@ -5,7 +5,7 @@ from .entry import InqEntry
 from .config import DEFAULT_CONFIG_FILE_LOCATION, InqConfig
 from .path import InqPath, InqPathError, InqRelPath
 
-__version__ = "4.7.2"
+__version__ = "4.7.3"
 
 __all__ = [
 	"InqEntry",
